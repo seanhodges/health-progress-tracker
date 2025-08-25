@@ -34,7 +34,7 @@
                     <!-- Weight Input -->
                     <div>
                         <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">Weight</label>
-                        <div class="flex">
+                        <div class="flex input-group">
                             <input 
                                 type="number" 
                                 id="weight" 
@@ -59,7 +59,7 @@
                     <!-- Waist Input -->
                     <div>
                         <label for="waistSize" class="block text-sm font-medium text-gray-700 mb-1">Waist Size</label>
-                        <div class="flex">
+                        <div class="flex input-group">
                             <input 
                                 type="number" 
                                 id="waistSize" 
@@ -156,8 +156,10 @@
             <!-- Chart Section -->
             <div class="mb-8">
                 <div id="chartContainer" class="w-full">
-                    <div id="chart" class="w-full h-96 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center">
-                        <div class="text-gray-500">Loading chart...</div>
+                    <div id="chart" class="w-full h-96 border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
+                        <div id="chartPlaceholder" class="w-full h-full flex items-center justify-center">
+                            <div class="text-gray-500">Loading chart...</div>
+                        </div>
                     </div>
                 </div>
             </div>

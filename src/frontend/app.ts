@@ -205,6 +205,12 @@ class HealthProgressTracker {
             const result: ApiResponse = await response.json();
 
             if (result.success && result.chartHtml) {
+                // Hide the placeholder when we have chart data
+                const placeholder = document.getElementById('chartPlaceholder');
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
+                
                 // Execute the chart script directly
                 const scriptElement = document.createElement('script');
                 scriptElement.textContent = result.chartHtml.replace(/<\/?script>/g, '');
