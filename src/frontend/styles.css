@@ -1,0 +1,132 @@
+/* Custom styles for the Health Progress Tracker */
+
+/* Filter button active state */
+.filter-btn.active {
+    @apply bg-blue-600 text-white;
+}
+
+.filter-btn.active:hover {
+    @apply bg-blue-700;
+}
+
+/* Loading animation for form submission */
+.loading {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+.loading::after {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Message animations */
+.message {
+    @apply p-4 rounded-md shadow-md mb-2 transform transition-all duration-300 ease-in-out;
+}
+
+.message.success {
+    @apply bg-green-100 text-green-800 border border-green-200;
+}
+
+.message.error {
+    @apply bg-red-100 text-red-800 border border-red-200;
+}
+
+.message.show {
+    @apply translate-x-0 opacity-100;
+}
+
+.message.hide {
+    @apply translate-x-full opacity-0;
+}
+
+/* Chart container styling */
+#chart {
+    min-height: 400px;
+}
+
+/* Table hover effects */
+tbody tr:hover {
+    @apply bg-gray-50;
+}
+
+/* Responsive date input styling */
+input[type="date"] {
+    min-width: 150px;
+}
+
+/* Focus styles for better accessibility */
+.focus-visible {
+    @apply ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Disabled button state */
+button:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+/* Custom scrollbar for table */
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    .shadow-lg {
+        box-shadow: none !important;
+    }
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 640px) {
+    .grid-cols-1.md\\:grid-cols-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .flex.flex-wrap {
+        justify-content: center;
+    }
+    
+    table {
+        font-size: 0.875rem;
+    }
+    
+    th, td {
+        padding: 0.5rem;
+    }
+}
