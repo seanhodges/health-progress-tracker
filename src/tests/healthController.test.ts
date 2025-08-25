@@ -106,9 +106,9 @@ describe('HealthController', () => {
           id: 1,
           date: '2024-01-15',
           weight: 75.5,
-          weightUnit: 'kg',
+          weightUnit: 'kg' as 'kg' | 'lbs' | 'st',
           waistSize: 85.0,
-          waistUnit: 'cm'
+          waistUnit: 'cm' as 'cm' | 'inches'
         }
       ];
 
@@ -131,7 +131,7 @@ describe('HealthController', () => {
     });
 
     it('should retrieve entries with query parameters', async () => {
-      const mockEntries = [];
+      const mockEntries: any[] = [];
       mockHealthService.getHistoryEntries.mockResolvedValue(mockEntries);
 
       const response = await request(app)
@@ -191,11 +191,11 @@ describe('HealthController', () => {
         dataPoints: 1
       });
       expect(mockHealthService.getChartData).toHaveBeenCalledWith(undefined, undefined);
-      expect(mockChartService.generateChart).toHaveBeenCalledWith(mockData, 'all');
+      expect(mockChartService.generateChart).toHaveBeenCalledWith(mockData, 'all', 'kg', 'cm');
     });
 
     it('should generate chart with query parameters', async () => {
-      const mockData = [];
+      const mockData: any[] = [];
       const mockChartHtml = '<script>empty chart</script>';
 
       mockHealthService.getChartData.mockResolvedValue(mockData);
@@ -211,7 +211,7 @@ describe('HealthController', () => {
 
       expect(response.status).toBe(200);
       expect(mockHealthService.getChartData).toHaveBeenCalledWith('2024-01-01', '2024-01-31');
-      expect(mockChartService.generateChart).toHaveBeenCalledWith(mockData, 'weight');
+      expect(mockChartService.generateChart).toHaveBeenCalledWith(mockData, 'weight', 'kg', 'cm');
     });
 
     it('should handle chart service errors', async () => {

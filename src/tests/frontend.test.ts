@@ -25,6 +25,7 @@ describe('Frontend HealthProgressTracker', () => {
         <select id="weightUnit" name="weightUnit">
           <option value="kg">kg</option>
           <option value="lbs">lbs</option>
+          <option value="st">st</option>
         </select>
         <input id="waistSize" type="number" name="waistSize" />
         <select id="waistUnit" name="waistUnit">
@@ -46,14 +47,23 @@ describe('Frontend HealthProgressTracker', () => {
       <select id="historyWeightUnit">
         <option value="kg">kg</option>
         <option value="lbs">lbs</option>
+        <option value="st">st</option>
       </select>
       <select id="historyWaistUnit">
         <option value="cm">cm</option>
         <option value="inches">inches</option>
       </select>
       
-      <div id="chart"></div>
-      <tbody id="historyTableBody"></tbody>
+      <div id="chartToolbar"></div>
+      <div id="chartContainer">
+        <div id="chart"></div>
+      </div>
+      <div id="noDataContainer" style="display: none;"></div>
+      <div id="chartPlaceholder" style="display: none;"></div>
+      
+      <table>
+        <tbody id="historyTableBody"></tbody>
+      </table>
       <div id="pagination" class="hidden">
         <span id="entriesStart">1</span>
         <span id="entriesEnd">25</span>
@@ -123,7 +133,7 @@ describe('Frontend HealthProgressTracker', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: '2024-01-15',
+          date: new Date().toISOString().split('T')[0], // Use today's date
           weight: 75.5,
           weightUnit: 'kg',
           waistSize: 85.0,
@@ -224,33 +234,42 @@ describe('Frontend HealthProgressTracker', () => {
 
       // Should have made a call to get entries with lbs unit
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('weightUnit=lbs'),
-        expect.any(Object)
+        expect.stringContaining('weightUnit=lbs')
       );
     });
 
     it('should format dates correctly in history table', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          success: true,
-          data: [
-            {
-              id: 1,
-              date: '2024-01-15',
-              weight: 75.5,
-              weightUnit: 'kg',
-              waistSize: 85.0,
-              waistUnit: 'cm'
-            }
-          ]
-        })
-      } as Response);
+      // Mock fetch for multiple API calls
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            success: true,
+            chartHtml: '<script>Plotly.newPlot("chart", [], {});</script>',
+            dataPoints: 1
+          })
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: [
+              {
+                id: 1,
+                date: '2024-01-15',
+                weight: 75.5,
+                weightUnit: 'kg',
+                waistSize: 85.0,
+                waistUnit: 'cm'
+              }
+            ]
+          })
+        } as Response);
 
       // Initialize app
       document.dispatchEvent(new Event('DOMContentLoaded'));
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const historyTableBody = document.getElementById('historyTableBody');
       expect(historyTableBody?.innerHTML).toContain('15/01/2024');
@@ -269,15 +288,25 @@ describe('Frontend HealthProgressTracker', () => {
         waistUnit: 'cm' as const
       }));
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true, data: mockData })
-      } as Response);
+      // Mock both chart and entries API calls
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            success: true,
+            chartHtml: '<script>Plotly.newPlot("chart", [], {});</script>',
+            dataPoints: 30
+          })
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ success: true, data: mockData })
+        } as Response);
 
       // Initialize app
       document.dispatchEvent(new Event('DOMContentLoaded'));
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const pagination = document.getElementById('pagination');
       expect(pagination?.classList.contains('hidden')).toBe(false);
@@ -294,15 +323,25 @@ describe('Frontend HealthProgressTracker', () => {
         waistUnit: 'cm' as const
       }));
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true, data: mockData })
-      } as Response);
+      // Mock both chart and entries API calls
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            success: true,
+            chartHtml: '<script>Plotly.newPlot("chart", [], {});</script>',
+            dataPoints: 30
+          })
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ success: true, data: mockData })
+        } as Response);
 
       // Initialize app
       document.dispatchEvent(new Event('DOMContentLoaded'));
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       const nextButton = document.getElementById('nextPage') as HTMLButtonElement;
       const prevButton = document.getElementById('prevPage') as HTMLButtonElement;

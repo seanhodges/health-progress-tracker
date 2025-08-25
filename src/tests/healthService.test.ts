@@ -76,7 +76,7 @@ describe('HealthService', () => {
         waistUnit: 'cm'
       };
 
-      await expect(healthService.saveEntry(entry)).rejects.toThrow('Weight unit must be kg or lbs');
+      await expect(healthService.saveEntry(entry)).rejects.toThrow('Weight unit must be kg, lbs, or st');
     });
 
     it('should throw error for invalid waist size', async () => {
@@ -203,7 +203,7 @@ describe('HealthService', () => {
     });
 
     it('should retrieve chart data with date filtering', async () => {
-      const mockEntries = [];
+      const mockEntries: any[] = [];
       mockDatabase.getEntriesStandardUnits.mockResolvedValue(mockEntries);
 
       await healthService.getChartData('2024-01-01', '2024-01-31');

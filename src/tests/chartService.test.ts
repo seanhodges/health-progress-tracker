@@ -75,9 +75,9 @@ describe('ChartService', () => {
     it('should include proper chart configuration', async () => {
       const result = await chartService.generateChart(mockData, 'all');
 
-      expect(result).toContain('responsive: true');
-      expect(result).toContain('displayModeBar: true');
-      expect(result).toContain('displaylogo: false');
+      expect(result).toContain('"responsive":true');
+      expect(result).toContain('"displayModeBar":true');
+      expect(result).toContain('"displaylogo":false');
     });
 
     it('should include dual y-axes for all measurements', async () => {

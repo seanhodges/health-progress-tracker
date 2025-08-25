@@ -22,7 +22,7 @@ export class ChartService {
     // Filter to show only one entry per day (latest entry if multiple exist)
     const dateMap: { [date: string]: StoredHealthEntry } = {};
     data.forEach(entry => {
-      if (!dateMap[entry.date] || entry.id > dateMap[entry.date].id) {
+      if (!dateMap[entry.date] || (entry.id && dateMap[entry.date].id && entry.id > dateMap[entry.date].id!)) {
         dateMap[entry.date] = entry;
       }
     });
