@@ -66,6 +66,27 @@
     box-sizing: border-box;
 }
 
+/* No data message styling */
+.no-data-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.no-data-message .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.7;
+}
+
+.no-data-message .text {
+    font-size: 1.1rem;
+    color: #6b7280;
+    text-align: center;
+}
+
 /* Table hover effects */
 tbody tr:hover {
     @apply bg-gray-50;
@@ -137,6 +158,16 @@ button:disabled {
     }
 }
 
+/* Chart toolbar styling */
+.chart-toolbar {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.chart-toolbar .filter-group {
+    white-space: nowrap;
+}
+
 /* Mobile responsiveness improvements */
 @media (max-width: 640px) {
     .grid-cols-1.md\\:grid-cols-3 {
@@ -153,5 +184,19 @@ button:disabled {
     
     th, td {
         padding: 0.5rem;
+    }
+    
+    /* Toolbar mobile adjustments */
+    .chart-toolbar {
+        padding: 0.75rem;
+    }
+    
+    .chart-toolbar .flex-col {
+        gap: 0.75rem;
+    }
+    
+    .chart-toolbar .filter-group {
+        justify-content: center;
+        white-space: normal;
     }
 }

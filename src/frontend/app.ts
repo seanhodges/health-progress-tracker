@@ -1,3 +1,5 @@
+import { convertWeight, convertWaist } from '../utils/unitConversion';
+
 interface HealthEntry {
     id?: number;
     date: string;
@@ -16,22 +18,78 @@ interface ApiResponse<T = any> {
     dataPoints?: number;
 }
 
-class HealthProgressTracker {
+export class HealthProgressTracker {
     private currentTimeFilter: string = 'all';
     private currentMeasurementFilter: string = 'all';
     private currentPage: number = 1;
     private entriesPerPage: number = 25;
     private allEntries: HealthEntry[] = [];
+    private currentWeightUnit: 'kg' | 'lbs' = 'kg';
+    private currentWaistUnit: 'cm' | 'inches' = 'cm';
+    private isUpdatingUnits: boolean = false;
 
     constructor() {
         this.init();
     }
 
     private init(): void {
+        console.log("Initialised");
+        this.loadSavedUnits();
         this.setupEventListeners();
         this.setDefaultDate();
+        this.syncUnitsAcrossSections();
         this.loadInitialData();
     }
+
+    private loadSavedUnits(): void {
+        try {
+            const savedWeightUnit = localStorage.getItem('healthTracker_weightUnit') as 'kg' | 'lbs';
+            const savedWaistUnit = localStorage.getItem('healthTracker_waistUnit') as 'cm' | 'inches';
+            
+            if (savedWeightUnit && (savedWeightUnit === 'kg' || savedWeightUnit === 'lbs')) {
+                this.currentWeightUnit = savedWeightUnit;
+            }
+            
+            if (savedWaistUnit && (savedWaistUnit === 'cm' || savedWaistUnit === 'inches')) {
+                this.currentWaistUnit = savedWaistUnit;
+            }
+        } catch (error) {
+            console.warn('Failed to load saved units from localStorage:', error);
+        }
+    }
+
+    private saveUnits(): void {
+        try {
+            localStorage.setItem('healthTracker_weightUnit', this.currentWeightUnit);
+            localStorage.setItem('healthTracker_waistUnit', this.currentWaistUnit);
+        } catch (error) {
+            console.warn('Failed to save units to localStorage:', error);
+        }
+    }
+
+    private syncUnitsAcrossSections(): void {
+        // Sync all unit selectors to current values during initialization
+        this.isUpdatingUnits = true;
+        
+        // Form unit selectors
+        const formWeightUnit = document.getElementById('weightUnit') as HTMLSelectElement;
+        const formWaistUnit = document.getElementById('waistUnit') as HTMLSelectElement;
+        
+        // History unit selectors
+        const historyWeightUnit = document.getElementById('historyWeightUnit') as HTMLSelectElement;
+        const historyWaistUnit = document.getElementById('historyWaistUnit') as HTMLSelectElement;
+        
+        if (formWeightUnit) formWeightUnit.value = this.currentWeightUnit;
+        if (formWaistUnit) formWaistUnit.value = this.currentWaistUnit;
+        if (historyWeightUnit) historyWeightUnit.value = this.currentWeightUnit;
+        if (historyWaistUnit) historyWaistUnit.value = this.currentWaistUnit;
+        
+        this.isUpdatingUnits = false;
+        
+        // Save current units to localStorage if they weren't previously saved
+        this.saveUnits();
+    }
+
 
     private setupEventListeners(): void {
         // Form submission
@@ -47,12 +105,29 @@ class HealthProgressTracker {
             btn.addEventListener('click', (e) => this.handleMeasurementFilter(e));
         });
 
-        // History unit changes
+        // Unit change listeners - separate handlers for form vs history
+        const formWeightUnit = document.getElementById('weightUnit') as HTMLSelectElement;
+        const formWaistUnit = document.getElementById('waistUnit') as HTMLSelectElement;
         const historyWeightUnit = document.getElementById('historyWeightUnit') as HTMLSelectElement;
         const historyWaistUnit = document.getElementById('historyWaistUnit') as HTMLSelectElement;
         
-        historyWeightUnit.addEventListener('change', () => this.updateHistoryTable());
-        historyWaistUnit.addEventListener('change', () => this.updateHistoryTable());
+        // Form unit selectors - these convert input values
+        if (formWeightUnit) {
+            formWeightUnit.addEventListener('change', (e) => this.handleFormWeightUnitChange(e));
+        }
+        
+        if (formWaistUnit) {
+            formWaistUnit.addEventListener('change', (e) => this.handleFormWaistUnitChange(e));
+        }
+        
+        // History unit selectors - these only sync and update display
+        if (historyWeightUnit) {
+            historyWeightUnit.addEventListener('change', (e) => this.handleHistoryUnitChange(e));
+        }
+        
+        if (historyWaistUnit) {
+            historyWaistUnit.addEventListener('change', (e) => this.handleHistoryUnitChange(e));
+        }
 
         // Pagination
         document.getElementById('prevPage')?.addEventListener('click', () => this.changePage(-1));
@@ -164,6 +239,102 @@ class HealthProgressTracker {
         this.updateChart();
     }
 
+    private handleFormWeightUnitChange(e: Event): void {
+        const select = e.target as HTMLSelectElement;
+        const newUnit = select.value as 'kg' | 'lbs';
+        const oldUnit = this.currentWeightUnit;
+        
+        // Convert form input value if units are different
+        if (oldUnit !== newUnit) {
+            const weightInput = document.getElementById('weight') as HTMLInputElement;
+            if (weightInput && weightInput.value && !isNaN(parseFloat(weightInput.value))) {
+                const currentValue = parseFloat(weightInput.value);
+                const convertedValue = convertWeight(currentValue, oldUnit, newUnit);
+                weightInput.value = convertedValue.toFixed(1);
+            }
+        }
+        
+        this.currentWeightUnit = newUnit;
+        this.saveUnits();
+        
+        // Update history unit selector without triggering its event
+        this.isUpdatingUnits = true;
+        const historyWeightUnit = document.getElementById('historyWeightUnit') as HTMLSelectElement;
+        if (historyWeightUnit) historyWeightUnit.value = newUnit;
+        this.isUpdatingUnits = false;
+        
+        // Update history table and chart
+        this.updateHistoryTable();
+        if (this.currentMeasurementFilter === 'weight' || this.currentMeasurementFilter === 'all') {
+            this.updateChart();
+        }
+    }
+
+    private handleFormWaistUnitChange(e: Event): void {
+        const select = e.target as HTMLSelectElement;
+        const newUnit = select.value as 'cm' | 'inches';
+        const oldUnit = this.currentWaistUnit;
+        
+        // Convert form input value if units are different
+        if (oldUnit !== newUnit) {
+            const waistInput = document.getElementById('waistSize') as HTMLInputElement;
+            if (waistInput && waistInput.value && !isNaN(parseFloat(waistInput.value))) {
+                const currentValue = parseFloat(waistInput.value);
+                const convertedValue = convertWaist(currentValue, oldUnit, newUnit);
+                waistInput.value = convertedValue.toFixed(1);
+            }
+        }
+        
+        this.currentWaistUnit = newUnit;
+        this.saveUnits();
+        
+        // Update history unit selector without triggering its event
+        this.isUpdatingUnits = true;
+        const historyWaistUnit = document.getElementById('historyWaistUnit') as HTMLSelectElement;
+        if (historyWaistUnit) historyWaistUnit.value = newUnit;
+        this.isUpdatingUnits = false;
+        
+        // Update history table and chart
+        this.updateHistoryTable();
+        if (this.currentMeasurementFilter === 'waist' || this.currentMeasurementFilter === 'all') {
+            this.updateChart();
+        }
+    }
+
+    private handleHistoryUnitChange(e: Event): void {
+        // Prevent recursive calls during unit synchronization
+        if (this.isUpdatingUnits) return;
+        
+        const select = e.target as HTMLSelectElement;
+        const isWeightUnit = select.id === 'historyWeightUnit';
+        const newUnit = select.value;
+        
+        if (isWeightUnit) {
+            this.currentWeightUnit = newUnit as 'kg' | 'lbs';
+            // Update form unit selector without triggering its event
+            this.isUpdatingUnits = true;
+            const formWeightUnit = document.getElementById('weightUnit') as HTMLSelectElement;
+            if (formWeightUnit) formWeightUnit.value = newUnit;
+            this.isUpdatingUnits = false;
+        } else {
+            this.currentWaistUnit = newUnit as 'cm' | 'inches';
+            // Update form unit selector without triggering its event
+            this.isUpdatingUnits = true;
+            const formWaistUnit = document.getElementById('waistUnit') as HTMLSelectElement;
+            if (formWaistUnit) formWaistUnit.value = newUnit;
+            this.isUpdatingUnits = false;
+        }
+        
+        this.saveUnits();
+        
+        // Update history table and chart
+        this.updateHistoryTable();
+        if ((isWeightUnit && (this.currentMeasurementFilter === 'weight' || this.currentMeasurementFilter === 'all')) ||
+            (!isWeightUnit && (this.currentMeasurementFilter === 'waist' || this.currentMeasurementFilter === 'all'))) {
+            this.updateChart();
+        }
+    }
+
     private getDateRange(): { startDate?: string; endDate?: string } {
         if (this.currentTimeFilter === 'all') {
             return {};
@@ -200,40 +371,63 @@ class HealthProgressTracker {
             if (startDate) params.append('startDate', startDate);
             if (endDate) params.append('endDate', endDate);
             params.append('measurementFilter', this.currentMeasurementFilter);
+            params.append('weightUnit', this.currentWeightUnit);
+            params.append('waistUnit', this.currentWaistUnit);
 
             const response = await fetch(`/api/chart?${params}`);
             const result: ApiResponse = await response.json();
 
-            if (result.success && result.chartHtml) {
-                // Hide the placeholder when we have chart data
-                const placeholder = document.getElementById('chartPlaceholder');
-                if (placeholder) {
-                    placeholder.style.display = 'none';
+            const chartToolbar = document.getElementById('chartToolbar');
+            const chartContainer = document.getElementById('chartContainer');
+            const noDataContainer = document.getElementById('noDataContainer');
+            const placeholder = document.getElementById('chartPlaceholder');
+            
+            if (result.success) {
+                if (result.dataPoints && result.dataPoints > 0) {
+                    // Show chart with toolbar and hide no data message
+                    if (chartToolbar) chartToolbar.style.display = 'flex';
+                    if (chartContainer) chartContainer.style.display = 'block';
+                    if (noDataContainer) noDataContainer.style.display = 'none';
+                    if (placeholder) placeholder.style.display = 'none';
+                    
+                    // Execute the chart script directly
+                    if (result.chartHtml) {
+                        const scriptElement = document.createElement('script');
+                        scriptElement.textContent = result.chartHtml.replace(/<\/?script>/g, '');
+                        document.head.appendChild(scriptElement);
+                        document.head.removeChild(scriptElement);
+                    }
+                } else {
+                    // No data available - hide chart/toolbar and show no data message
+                    if (chartToolbar) chartToolbar.style.display = 'none';
+                    if (chartContainer) chartContainer.style.display = 'none';
+                    if (noDataContainer) noDataContainer.style.display = 'flex';
                 }
-                
-                // Execute the chart script directly
-                const scriptElement = document.createElement('script');
-                scriptElement.textContent = result.chartHtml.replace(/<\/?script>/g, '');
-                document.head.appendChild(scriptElement);
-                document.head.removeChild(scriptElement);
             }
         } catch (error) {
             console.error('Error updating chart:', error);
             this.showMessage('Failed to load chart', 'error');
+            
+            // On error, show no data message
+            const chartToolbar = document.getElementById('chartToolbar');
+            const chartContainer = document.getElementById('chartContainer');
+            const noDataContainer = document.getElementById('noDataContainer');
+            
+            if (chartToolbar) chartToolbar.style.display = 'none';
+            if (chartContainer) chartContainer.style.display = 'none';
+            if (noDataContainer) noDataContainer.style.display = 'flex';
         }
     }
 
     private async loadHistoryData(): Promise<void> {
         try {
             const { startDate, endDate } = this.getDateRange();
-            const historyWeightUnit = (document.getElementById('historyWeightUnit') as HTMLSelectElement).value as 'kg' | 'lbs';
-            const historyWaistUnit = (document.getElementById('historyWaistUnit') as HTMLSelectElement).value as 'cm' | 'inches';
             
             const params = new URLSearchParams();
             if (startDate) params.append('startDate', startDate);
             if (endDate) params.append('endDate', endDate);
-            params.append('weightUnit', historyWeightUnit);
-            params.append('waistUnit', historyWaistUnit);
+            params.append('weightUnit', this.currentWeightUnit);
+            params.append('waistUnit', this.currentWaistUnit);
 
             const response = await fetch(`/api/entries?${params}`);
             const result: ApiResponse<HealthEntry[]> = await response.json();
@@ -362,6 +556,13 @@ class HealthProgressTracker {
 }
 
 // Initialize the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new HealthProgressTracker();
-});
+if (typeof window !== 'undefined' && window.document) {
+    document.addEventListener('DOMContentLoaded', (e: Event) => {
+        if (e.isTrusted) {
+            // If a browser-initiated (trusted) event then prevent it from reaching the app-initiated listener.
+            // This avoids a double initialisation of the app.
+            e.stopImmediatePropagation();
+        }
+        new HealthProgressTracker();
+    });
+}
