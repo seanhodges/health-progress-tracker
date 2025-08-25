@@ -8,7 +8,14 @@
     "dev": "concurrently \"tsc --watch\" \"webpack --mode=development --watch\" \"nodemon dist/server.js\"",
     "start": "npm run build && node dist/server.js",
     "test": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "docker:build": "node -e \"console.log('Building Docker image...'); process.platform === 'win32' ? require('child_process').execSync('scripts\\\\docker-build.bat', {stdio: 'inherit'}) : require('child_process').execSync('chmod +x scripts/docker-build.sh && scripts/docker-build.sh', {stdio: 'inherit'})\"",
+    "docker:build:test": "node -e \"console.log('Building and testing Docker image...'); process.platform === 'win32' ? require('child_process').execSync('scripts\\\\docker-build.bat --test', {stdio: 'inherit'}) : require('child_process').execSync('chmod +x scripts/docker-build.sh && scripts/docker-build.sh --test', {stdio: 'inherit'})\"",
+    "docker:publish": "node -e \"console.log('Publishing Docker image...'); process.platform === 'win32' ? require('child_process').execSync('scripts\\\\docker-publish.bat', {stdio: 'inherit'}) : require('child_process').execSync('chmod +x scripts/docker-publish.sh && scripts/docker-publish.sh', {stdio: 'inherit'})\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:run": "docker run -p 3000:3000 health-progress-tracker:latest"
   },
   "dependencies": {
     "cors": "^2.8.5",
