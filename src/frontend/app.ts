@@ -4,7 +4,7 @@ interface HealthEntry {
     id?: number;
     date: string;
     weight: number;
-    weightUnit: 'kg' | 'lbs';
+    weightUnit: 'kg' | 'lbs' | 'st';
     waistSize: number;
     waistUnit: 'cm' | 'inches';
     createdAt?: string;
@@ -24,7 +24,7 @@ export class HealthProgressTracker {
     private currentPage: number = 1;
     private entriesPerPage: number = 25;
     private allEntries: HealthEntry[] = [];
-    private currentWeightUnit: 'kg' | 'lbs' = 'kg';
+    private currentWeightUnit: 'kg' | 'lbs' | 'st' = 'kg';
     private currentWaistUnit: 'cm' | 'inches' = 'cm';
     private isUpdatingUnits: boolean = false;
 
@@ -43,10 +43,10 @@ export class HealthProgressTracker {
 
     private loadSavedUnits(): void {
         try {
-            const savedWeightUnit = localStorage.getItem('healthTracker_weightUnit') as 'kg' | 'lbs';
+            const savedWeightUnit = localStorage.getItem('healthTracker_weightUnit') as 'kg' | 'lbs' | 'st';
             const savedWaistUnit = localStorage.getItem('healthTracker_waistUnit') as 'cm' | 'inches';
             
-            if (savedWeightUnit && (savedWeightUnit === 'kg' || savedWeightUnit === 'lbs')) {
+            if (savedWeightUnit && (savedWeightUnit === 'kg' || savedWeightUnit === 'lbs' || savedWeightUnit === 'st')) {
                 this.currentWeightUnit = savedWeightUnit;
             }
             
@@ -67,10 +67,7 @@ export class HealthProgressTracker {
         }
     }
 
-    private syncUnitsAcrossSections(): void {
-        // Sync all unit selectors to current values during initialization
-        this.isUpdatingUnits = true;
-        
+    private restoreUnitSelections(): void {
         // Form unit selectors
         const formWeightUnit = document.getElementById('weightUnit') as HTMLSelectElement;
         const formWaistUnit = document.getElementById('waistUnit') as HTMLSelectElement;
@@ -83,6 +80,13 @@ export class HealthProgressTracker {
         if (formWaistUnit) formWaistUnit.value = this.currentWaistUnit;
         if (historyWeightUnit) historyWeightUnit.value = this.currentWeightUnit;
         if (historyWaistUnit) historyWaistUnit.value = this.currentWaistUnit;
+    }
+
+    private syncUnitsAcrossSections(): void {
+        // Sync all unit selectors to current values during initialization
+        this.isUpdatingUnits = true;
+        
+        this.restoreUnitSelections();
         
         this.isUpdatingUnits = false;
         
@@ -176,6 +180,9 @@ export class HealthProgressTracker {
                 form.reset();
                 this.setDefaultDate();
                 
+                // Restore unit selections after form reset
+                this.restoreUnitSelections();
+                
                 // Refresh data
                 await Promise.all([
                     this.updateChart(),
@@ -264,7 +271,7 @@ export class HealthProgressTracker {
         this.isUpdatingUnits = false;
         
         // Update history table and chart
-        this.updateHistoryTable();
+        this.loadHistoryData();
         if (this.currentMeasurementFilter === 'weight' || this.currentMeasurementFilter === 'all') {
             this.updateChart();
         }
@@ -295,7 +302,7 @@ export class HealthProgressTracker {
         this.isUpdatingUnits = false;
         
         // Update history table and chart
-        this.updateHistoryTable();
+        this.loadHistoryData();
         if (this.currentMeasurementFilter === 'waist' || this.currentMeasurementFilter === 'all') {
             this.updateChart();
         }
@@ -328,7 +335,7 @@ export class HealthProgressTracker {
         this.saveUnits();
         
         // Update history table and chart
-        this.updateHistoryTable();
+        this.loadHistoryData();
         if ((isWeightUnit && (this.currentMeasurementFilter === 'weight' || this.currentMeasurementFilter === 'all')) ||
             (!isWeightUnit && (this.currentMeasurementFilter === 'waist' || this.currentMeasurementFilter === 'all'))) {
             this.updateChart();
@@ -398,8 +405,8 @@ export class HealthProgressTracker {
                         document.head.removeChild(scriptElement);
                     }
                 } else {
-                    // No data available - hide chart/toolbar and show no data message
-                    if (chartToolbar) chartToolbar.style.display = 'none';
+                    // No data available - keep toolbar visible, hide chart and show no data message
+                    if (chartToolbar) chartToolbar.style.display = 'flex';
                     if (chartContainer) chartContainer.style.display = 'none';
                     if (noDataContainer) noDataContainer.style.display = 'flex';
                 }
@@ -408,12 +415,12 @@ export class HealthProgressTracker {
             console.error('Error updating chart:', error);
             this.showMessage('Failed to load chart', 'error');
             
-            // On error, show no data message
+            // On error, keep toolbar visible and show no data message
             const chartToolbar = document.getElementById('chartToolbar');
             const chartContainer = document.getElementById('chartContainer');
             const noDataContainer = document.getElementById('noDataContainer');
             
-            if (chartToolbar) chartToolbar.style.display = 'none';
+            if (chartToolbar) chartToolbar.style.display = 'flex';
             if (chartContainer) chartContainer.style.display = 'none';
             if (noDataContainer) noDataContainer.style.display = 'flex';
         }

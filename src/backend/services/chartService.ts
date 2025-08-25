@@ -1,4 +1,5 @@
 import { StoredHealthEntry } from '../database/connection';
+import { convertWeight, convertWaist } from '../../utils/unitConversion';
 
 export interface ChartData {
   chartHtml: string;
@@ -9,17 +10,29 @@ export class ChartService {
   
   async generateChart(
     data: StoredHealthEntry[], 
-    measurementFilter: 'weight' | 'waist' | 'all' = 'all'
+    measurementFilter: 'weight' | 'waist' | 'all' = 'all',
+    weightUnit: 'kg' | 'lbs' | 'st' = 'kg',
+    waistUnit: 'cm' | 'inches' = 'cm'
   ): Promise<string> {
     
     if (!data || data.length === 0) {
       return this.generateEmptyChart();
     }
 
-    // Prepare data for plotting
-    const dates = data.map(entry => entry.date);
-    const weights = data.map(entry => entry.weight);
-    const waists = data.map(entry => entry.waist);
+    // Filter to show only one entry per day (latest entry if multiple exist)
+    const dateMap: { [date: string]: StoredHealthEntry } = {};
+    data.forEach(entry => {
+      if (!dateMap[entry.date] || entry.id > dateMap[entry.date].id) {
+        dateMap[entry.date] = entry;
+      }
+    });
+    
+    const filteredData = Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
+    
+    // Prepare data for plotting with unit conversion
+    const dates = filteredData.map(entry => entry.date);
+    const weights = filteredData.map(entry => convertWeight(entry.weight, 'kg', weightUnit));
+    const waists = filteredData.map(entry => convertWaist(entry.waist, 'cm', waistUnit));
 
     const traces: any[] = [];
 
@@ -30,7 +43,7 @@ export class ChartService {
         y: weights,
         type: 'scatter',
         mode: 'lines+markers',
-        name: 'Weight (kg)',
+        name: `Weight (${weightUnit})`,
         line: { color: '#3B82F6', width: 2 },
         marker: { size: 6, color: '#3B82F6' }
       });
@@ -43,7 +56,7 @@ export class ChartService {
         y: waists,
         type: 'scatter',
         mode: 'lines+markers',
-        name: 'Waist (cm)',
+        name: `Waist (${waistUnit})`,
         line: { color: '#EF4444', width: 2 },
         marker: { size: 6, color: '#EF4444' },
         yaxis: measurementFilter === 'all' ? 'y2' : 'y'
@@ -59,12 +72,14 @@ export class ChartService {
       xaxis: {
         title: 'Date',
         type: 'date',
+        tickformat: '%d/%m/%Y',
+        nticks: 20,
         showgrid: true,
         gridcolor: '#E5E7EB'
       },
       yaxis: {
-        title: measurementFilter === 'weight' ? 'Weight (kg)' : 
-               measurementFilter === 'waist' ? 'Waist (cm)' : 'Weight (kg)',
+        title: measurementFilter === 'weight' ? `Weight (${weightUnit})` : 
+               measurementFilter === 'waist' ? `Waist (${waistUnit})` : `Weight (${weightUnit})`,
         showgrid: true,
         gridcolor: '#E5E7EB',
         side: 'left'
@@ -85,7 +100,7 @@ export class ChartService {
     // Add second y-axis if showing both measurements
     if (measurementFilter === 'all' && traces.length === 2) {
       layout.yaxis2 = {
-        title: 'Waist (cm)',
+        title: `Waist (${waistUnit})`,
         overlaying: 'y',
         side: 'right',
         showgrid: false

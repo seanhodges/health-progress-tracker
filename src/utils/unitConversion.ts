@@ -2,16 +2,34 @@
  * Unit conversion utilities
  */
 
-export function convertWeight(value: number, fromUnit: 'kg' | 'lbs', toUnit: 'kg' | 'lbs'): number {
+export function convertWeight(value: number, fromUnit: 'kg' | 'lbs' | 'st', toUnit: 'kg' | 'lbs' | 'st'): number {
     if (fromUnit === toUnit) return value;
     
+    // Conversion factors: 1 kg = 2.20462262185 lbs = 0.157473044 st
+    // 1 st = 14 lbs = 6.35029318 kg
     let result: number;
-    if (fromUnit === 'kg' && toUnit === 'lbs') {
-        result = value * 2.20462262185;
-    } else if (fromUnit === 'lbs' && toUnit === 'kg') {
-        result = value / 2.20462262185;
+    
+    // Convert to kg first as base unit
+    let kgValue: number;
+    if (fromUnit === 'kg') {
+        kgValue = value;
+    } else if (fromUnit === 'lbs') {
+        kgValue = value / 2.20462262185;
+    } else if (fromUnit === 'st') {
+        kgValue = value * 6.35029318;
     } else {
-        result = value;
+        kgValue = value;
+    }
+    
+    // Convert from kg to target unit
+    if (toUnit === 'kg') {
+        result = kgValue;
+    } else if (toUnit === 'lbs') {
+        result = kgValue * 2.20462262185;
+    } else if (toUnit === 'st') {
+        result = kgValue / 6.35029318;
+    } else {
+        result = kgValue;
     }
     
     // Round to 4 decimal places to maintain precision

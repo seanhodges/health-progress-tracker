@@ -5,7 +5,7 @@ export interface HealthEntry {
   id?: number;
   date: string;
   weight: number;
-  weightUnit: 'kg' | 'lbs';
+  weightUnit: 'kg' | 'lbs' | 'st';
   waistSize: number;
   waistUnit: 'cm' | 'inches';
   createdAt?: string;
@@ -33,14 +33,26 @@ export class Database {
     });
   }
 
-  // Convert weight from lbs to kg
-  private convertWeightToKg(weight: number, unit: 'kg' | 'lbs'): number {
-    return unit === 'lbs' ? weight * 0.453592 : weight;
+  // Convert weight to kg (standard unit for storage)
+  private convertWeightToKg(weight: number, unit: 'kg' | 'lbs' | 'st'): number {
+    if (unit === 'lbs') {
+      return weight * 0.453592;
+    } else if (unit === 'st') {
+      return weight * 6.35029318;
+    } else {
+      return weight; // kg
+    }
   }
 
   // Convert weight from kg to specified unit
-  private convertWeightFromKg(weightKg: number, unit: 'kg' | 'lbs'): number {
-    return unit === 'lbs' ? weightKg / 0.453592 : weightKg;
+  private convertWeightFromKg(weightKg: number, unit: 'kg' | 'lbs' | 'st'): number {
+    if (unit === 'lbs') {
+      return weightKg / 0.453592;
+    } else if (unit === 'st') {
+      return weightKg / 6.35029318;
+    } else {
+      return weightKg; // kg
+    }
   }
 
   // Convert waist size from inches to cm
@@ -98,7 +110,7 @@ export class Database {
     });
   }
 
-  async getEntries(startDate?: string, endDate?: string, weightUnit: 'kg' | 'lbs' = 'kg', waistUnit: 'cm' | 'inches' = 'cm'): Promise<HealthEntry[]> {
+  async getEntries(startDate?: string, endDate?: string, weightUnit: 'kg' | 'lbs' | 'st' = 'kg', waistUnit: 'cm' | 'inches' = 'cm'): Promise<HealthEntry[]> {
     return new Promise((resolve, reject) => {
       let sql = `
         SELECT id, date, weight, waist, created_at as createdAt
@@ -154,6 +166,21 @@ export class Database {
           reject(err);
         } else {
           resolve(rows || []);
+        }
+      });
+    });
+  }
+
+  async deleteEntriesByDate(date: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+      const sql = `DELETE FROM health_entries WHERE date = ?`;
+      
+      this.db.run(sql, [date], function(err) {
+        if (err) {
+          reject(err);
+        } else {
+          console.log(`Deleted ${this.changes} entries for date: ${date}`);
+          resolve(this.changes);
         }
       });
     });

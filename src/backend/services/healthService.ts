@@ -14,7 +14,7 @@ export class HealthService {
     return await this.database.insertEntry(entry);
   }
 
-  async getHistoryEntries(startDate?: string, endDate?: string, weightUnit: 'kg' | 'lbs' = 'kg', waistUnit: 'cm' | 'inches' = 'cm'): Promise<HealthEntry[]> {
+  async getHistoryEntries(startDate?: string, endDate?: string, weightUnit: 'kg' | 'lbs' | 'st' = 'kg', waistUnit: 'cm' | 'inches' = 'cm'): Promise<HealthEntry[]> {
     return await this.database.getEntries(startDate, endDate, weightUnit, waistUnit);
   }
 
@@ -32,8 +32,8 @@ export class HealthService {
       throw new Error('Weight must be a positive number');
     }
 
-    if (!['kg', 'lbs'].includes(entry.weightUnit)) {
-      throw new Error('Weight unit must be kg or lbs');
+    if (!['kg', 'lbs', 'st'].includes(entry.weightUnit)) {
+      throw new Error('Weight unit must be kg, lbs, or st');
     }
 
     if (!entry.waistSize || entry.waistSize <= 0) {
@@ -51,8 +51,17 @@ export class HealthService {
     }
 
     // Validate reasonable ranges
-    const maxWeight = entry.weightUnit === 'kg' ? 500 : 1100; // 500kg or 1100lbs
-    const minWeight = entry.weightUnit === 'kg' ? 20 : 44; // 20kg or 44lbs
+    let maxWeight: number, minWeight: number;
+    if (entry.weightUnit === 'kg') {
+      maxWeight = 500; // 500kg
+      minWeight = 20;  // 20kg
+    } else if (entry.weightUnit === 'lbs') {
+      maxWeight = 1100; // 1100lbs
+      minWeight = 44;   // 44lbs
+    } else { // st
+      maxWeight = 79;   // 79 stone (~500kg)
+      minWeight = 3;    // 3 stone (~20kg)
+    }
     
     if (entry.weight > maxWeight || entry.weight < minWeight) {
       throw new Error(`Weight must be between ${minWeight} and ${maxWeight} ${entry.weightUnit}`);

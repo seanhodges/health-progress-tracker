@@ -39,7 +39,7 @@
                                 type="number" 
                                 id="weight" 
                                 name="weight" 
-                                step="0.1" 
+                                step="0.01" 
                                 min="0" 
                                 required
                                 class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -52,6 +52,7 @@
                             >
                                 <option value="kg">kg</option>
                                 <option value="lbs">lbs</option>
+                                <option value="st">st</option>
                             </select>
                         </div>
                     </div>
@@ -64,7 +65,7 @@
                                 type="number" 
                                 id="waistSize" 
                                 name="waistSize" 
-                                step="0.1" 
+                                step="0.01" 
                                 min="0" 
                                 required
                                 class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -97,57 +98,71 @@
             <!-- Chart Section with Toolbar -->
             <div class="mb-8">
                 <!-- Chart Toolbar -->
-                <div id="chartToolbar" class="chart-toolbar flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 border border-gray-200 rounded-t-lg px-4 py-3 gap-4">
+                <div id="chartToolbar" class="chart-toolbar flex flex-row items-center justify-between bg-gray-50 border border-gray-200 rounded-t-lg px-3 py-2 gap-3 text-sm">
                     <!-- Time Filter Buttons -->
-                    <div class="filter-group flex flex-wrap gap-2 items-center">
-                        <span class="text-sm font-medium text-gray-700 mr-3">Time Period:</span>
+                    <div class="filter-group flex items-center gap-1">
+                        <span class="font-medium text-gray-700 mr-2">Time:</span>
                         <button 
                             id="filter-1M" 
-                            class="filter-btn time-filter px-3 py-1 text-sm font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="filter-btn time-filter px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                             1M
                         </button>
                         <button 
                             id="filter-3M" 
-                            class="filter-btn time-filter px-3 py-1 text-sm font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="filter-btn time-filter px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                             3M
                         </button>
                         <button 
                             id="filter-6M" 
-                            class="filter-btn time-filter px-3 py-1 text-sm font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="filter-btn time-filter px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                             6M
                         </button>
                         <button 
                             id="filter-all" 
-                            class="filter-btn time-filter active px-3 py-1 text-sm font-medium rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="filter-btn time-filter active px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
-                            All Time
+                            All
                         </button>
                     </div>
 
                     <!-- Measurement Filter Buttons -->
-                    <div class="filter-group flex flex-wrap gap-2 items-center">
-                        <span class="text-sm font-medium text-gray-700 mr-3">Show:</span>
+                    <div class="filter-group flex items-center gap-1">
+                        <span class="font-medium text-gray-700 mr-2">Show:</span>
                         <button 
                             id="measurement-weight" 
-                            class="filter-btn measurement-filter px-3 py-1 text-sm font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="filter-btn measurement-filter px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                             Weight
                         </button>
                         <button 
                             id="measurement-waist" 
-                            class="filter-btn measurement-filter px-3 py-1 text-sm font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="filter-btn measurement-filter px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
-                            Waist Size
+                            Waist
                         </button>
                         <button 
                             id="measurement-all" 
-                            class="filter-btn measurement-filter active px-3 py-1 text-sm font-medium rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            class="filter-btn measurement-filter active px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                             All
                         </button>
+                    </div>
+
+                    <!-- Unit Selection -->
+                    <div class="filter-group flex items-center gap-1">
+                        <span class="font-medium text-gray-700 mr-1">Units:</span>
+                        <select id="historyWeightUnit" class="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="kg">kg</option>
+                            <option value="lbs">lbs</option>
+                            <option value="st">st</option>
+                        </select>
+                        <select id="historyWaistUnit" class="border border-gray-300 rounded px-1 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="cm">cm</option>
+                            <option value="inches">in</option>
+                        </select>
                     </div>
                 </div>
 
@@ -173,18 +188,6 @@
             <div class="mb-8">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-700">History</h2>
-                    <div class="flex items-center space-x-2 text-sm text-gray-600">
-                        <label for="historyWeightUnit">Weight:</label>
-                        <select id="historyWeightUnit" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                            <option value="kg">kg</option>
-                            <option value="lbs">lbs</option>
-                        </select>
-                        <label for="historyWaistUnit" class="ml-4">Waist:</label>
-                        <select id="historyWaistUnit" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                            <option value="cm">cm</option>
-                            <option value="inches">in</option>
-                        </select>
-                    </div>
                 </div>
                 
                 <div class="overflow-x-auto">

@@ -88,4 +88,55 @@ describe('Unit Conversion Tests', () => {
             expect(result).toBeCloseTo(155.43, 2);
         });
     });
+
+    describe('Stone Conversion', () => {
+        test('should convert kg to stone correctly', () => {
+            const result = convertWeight(70, 'kg', 'st');
+            expect(result).toBeCloseTo(11.023, 3);
+        });
+
+        test('should convert stone to kg correctly', () => {
+            const result = convertWeight(11, 'st', 'kg');
+            expect(result).toBeCloseTo(69.853, 3);
+        });
+
+        test('should convert lbs to stone correctly', () => {
+            const result = convertWeight(154, 'lbs', 'st');
+            expect(result).toBeCloseTo(11, 3);
+        });
+
+        test('should convert stone to lbs correctly', () => {
+            const result = convertWeight(11, 'st', 'lbs');
+            expect(result).toBe(154);
+        });
+
+        test('1 stone should equal 14 lbs', () => {
+            const result = convertWeight(1, 'st', 'lbs');
+            expect(result).toBe(14);
+        });
+
+        test('1 stone should equal 6.35029318 kg', () => {
+            const result = convertWeight(1, 'st', 'kg');
+            expect(result).toBeCloseTo(6.3503, 4);
+        });
+
+        test('should maintain accuracy in kg->st->kg conversion', () => {
+            const original = 70;
+            const toStone = convertWeight(original, 'kg', 'st');
+            const backToKg = convertWeight(toStone, 'st', 'kg');
+            expect(backToKg).toBeCloseTo(original, 2);
+        });
+
+        test('should maintain accuracy in lbs->st->lbs conversion', () => {
+            const original = 154;
+            const toStone = convertWeight(original, 'lbs', 'st');
+            const backToLbs = convertWeight(toStone, 'st', 'lbs');
+            expect(backToLbs).toBeCloseTo(original, 2);
+        });
+
+        test('should return same value for same units', () => {
+            const result = convertWeight(11, 'st', 'st');
+            expect(result).toBe(11);
+        });
+    });
 });

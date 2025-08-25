@@ -48,7 +48,7 @@ export class HealthController {
       const entries = await this.healthService.getHistoryEntries(
         startDate as string,
         endDate as string,
-        weightUnit as 'kg' | 'lbs',
+        weightUnit as 'kg' | 'lbs' | 'st',
         waistUnit as 'cm' | 'inches'
       );
 
@@ -68,7 +68,7 @@ export class HealthController {
   // GET /api/chart - Get chart HTML with optional filtering
   async getChart(req: Request, res: Response): Promise<void> {
     try {
-      const { startDate, endDate, measurementFilter = 'all' } = req.query;
+      const { startDate, endDate, measurementFilter = 'all', weightUnit = 'kg', waistUnit = 'cm' } = req.query;
 
       // Get data in standard units for charting
       const data = await this.healthService.getChartData(
@@ -78,7 +78,9 @@ export class HealthController {
 
       const chartHtml = await this.chartService.generateChart(
         data,
-        measurementFilter as 'weight' | 'waist' | 'all'
+        measurementFilter as 'weight' | 'waist' | 'all',
+        weightUnit as 'kg' | 'lbs' | 'st',
+        waistUnit as 'cm' | 'inches'
       );
 
       res.json({
