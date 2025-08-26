@@ -1,20 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { Database } from './backend/database/connection';
-import { HealthService } from './backend/services/healthService';
-import { ChartService } from './backend/services/chartService';
-import { HealthController } from './backend/controllers/healthController';
-import { createHealthRoutes } from './backend/routes/healthRoutes';
+import { Database } from './backend/infrastructure/database/connection';
+import { HealthEntryRepository } from './backend/infrastructure/repositories/healthEntryRepository';
+import { HealthApplicationService } from './backend/application/services/healthApplicationService';
+import { ChartService } from './backend/application/services/chartService';
+import { HealthController } from './backend/presentation/controllers/healthController';
+import { createHealthRoutes } from './backend/presentation/routes/healthRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize database and services
+// Initialize database and services following DDD architecture
 const database = new Database();
-const healthService = new HealthService(database);
+const healthEntryRepository = new HealthEntryRepository(database);
+const healthApplicationService = new HealthApplicationService(healthEntryRepository);
 const chartService = new ChartService();
-const healthController = new HealthController(healthService, chartService);
+const healthController = new HealthController(healthApplicationService, chartService);
 
 // Middleware
 app.use(cors());

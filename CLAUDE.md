@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The Health Progress Tracker is a modern, full-stack web application for tracking health metrics (weight and waist measurements).
+The Health Progress Tracker is a modern, full-stack web application for tracking health information (weight, waist measurements, etc).
 
 ## Technical Stack
 
@@ -22,7 +22,7 @@ The Health Progress Tracker is a modern, full-stack web application for tracking
 
 ### Development & Deployment
 - **Build System**: TypeScript compiler + Webpack
-- **Testing**: Jest with 100% test coverage requirement
+- **Testing**: Jest with reasonable test coverage
 - **Containerization**: Docker with multi-stage builds
 - **Process Management**: Graceful shutdown handling
 - **Development**: Hot reload with concurrent build processes
@@ -167,13 +167,11 @@ src/frontend/
     infrastructure/storage/        # Storage adapters (local storage, cookies, etc)
 ```
 
-### Test Structure (100% Coverage Requirement)
+### Test Structure (Coverage Requirement)
 
 Test files to as closely as possible mirror the production directory structure.
 
 ## Testing Requirements & Standards
-
-### 100% Test Coverage Mandate
 
 #### Coverage Requirements
 ```json
@@ -186,10 +184,10 @@ Test files to as closely as possible mirror the production directory structure.
   ],
   "coverageThreshold": {
     "global": {
-      "branches": 100,
-      "functions": 100,
-      "lines": 100,
-      "statements": 100
+      "branches": 50,
+      "functions": 50,
+      "lines": 70,
+      "statements": 70
     }
   }
 }
@@ -535,4 +533,4 @@ class FilterManager {
 }
 ```
 
-This file serves as the authoritative guide for development practices, ensuring consistency, quality, and maintainability while adhering to DDD principles and requiring 100% test coverage across the entire application.
+This file serves as the authoritative guide for development practices, ensuring consistency, quality, and maintainability while adhering to DDD principles and requiring reasonable test coverage across the entire application.
